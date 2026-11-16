@@ -32,6 +32,25 @@ echo 'eval "$(pyenv init -)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
+**macOS, no Homebrew:** use the official installer script instead --
+no admin rights needed, it installs entirely under `~/.pyenv`:
+
+```bash
+curl https://pyenv.run | bash
+```
+
+(If `curl | bash` is blocked on your machine, clone it directly instead:
+`git clone https://github.com/pyenv/pyenv.git ~/.pyenv`.)
+
+Then add it to your shell (zsh):
+
+```bash
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+source ~/.zshrc
+```
+
 **Windows** (PowerShell, requires [Git for Windows](https://git-scm.com/download/win)):
 
 ```powershell
