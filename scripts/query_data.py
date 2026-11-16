@@ -1,7 +1,7 @@
 """Candidate task: query the DuckDB warehouse built by dbt.
 
 Usage (from the project root, /Users/gzenkner/projects/de_assessment):
-    python scripts/query_data.py
+    "$(pwd)/.venv/bin/python" scripts/query_data.py
 
 Fill in the TODOs below with SQL queries against the marts models
 (`dim_customers`, `fct_order_items`, `customer_order_summary`).

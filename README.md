@@ -1,8 +1,10 @@
 # Data Engineering Assessment
 
-A small dbt + DuckDB project with synthetic retail data (customers,
-products, orders, order items). See `docs/pipeline_diagram.html` for an
-overview of how the pieces fit together.
+A small dbt + DuckDB project with retail data (customers, products,
+orders, order items) sourced from the real
+[Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+on Kaggle. See `docs/pipeline_diagram.html` for an overview of how the
+pieces fit together.
 
 ## Setup
 
@@ -68,34 +70,49 @@ python --version      # confirm: Python 3.12.6
 **macOS**:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+# Run from the project root -- VENV sets the virtualenv's fully qualified
+# (absolute) path, so every command below is unambiguous regardless of
+# what's on PATH or which shell/dir you call it from.
+VENV="$(pwd)/.venv"
 
-python scripts/generate_data.py
+python3 -m venv "$VENV"
+"$VENV/bin/pip" install -r requirements.txt
+
+"$VENV/bin/python" scripts/generate_data.py
 
 cd dbt
-dbt deps --profiles-dir .
-dbt seed --profiles-dir .
-dbt run --profiles-dir .
-dbt test --profiles-dir .
+"$VENV/bin/dbt" deps --profiles-dir .
+"$VENV/bin/dbt" seed --profiles-dir .
+"$VENV/bin/dbt" run --profiles-dir .
+"$VENV/bin/dbt" test --profiles-dir .
+cd ..
 ```
 
 **Windows** (PowerShell):
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+# Run from the project root -- $Venv holds the virtualenv's fully
+# qualified (absolute) path, so every command below is unambiguous
+# regardless of what's on PATH or which shell/dir you call it from.
+$Venv = "$PWD\.venv"
 
-python scripts\generate_data.py
+python -m venv $Venv
+& "$Venv\Scripts\pip.exe" install -r requirements.txt
+
+& "$Venv\Scripts\python.exe" scripts\generate_data.py
 
 cd dbt
-dbt deps --profiles-dir .
-dbt seed --profiles-dir .
-dbt run --profiles-dir .
-dbt test --profiles-dir .
+& "$Venv\Scripts\dbt.exe" deps --profiles-dir .
+& "$Venv\Scripts\dbt.exe" seed --profiles-dir .
+& "$Venv\Scripts\dbt.exe" run --profiles-dir .
+& "$Venv\Scripts\dbt.exe" test --profiles-dir .
+cd ..
 ```
+
+Using the venv's own absolute binary path (rather than relying on an
+activated shell's `python`/`dbt` resolved from `PATH`) avoids picking up
+a different Python install (e.g. a system Python, or another pyenv
+version) by accident.
 
 This builds `dbt/dev.duckdb`, a self-contained DuckDB database file.
 
@@ -104,27 +121,34 @@ This builds `dbt/dev.duckdb`, a self-contained DuckDB database file.
 **macOS**:
 
 ```bash
-cd ..
-python scripts/load_duckdb.py
+"$(pwd)/.venv/bin/python" scripts/load_duckdb.py
 ```
 
 **Windows** (PowerShell):
 
 ```powershell
-cd ..
-python scripts\load_duckdb.py
+& "$PWD\.venv\Scripts\python.exe" scripts\load_duckdb.py
 ```
 
 ## Tests
 
+**macOS**:
+
 ```bash
-pytest scripts/
+"$(pwd)/.venv/bin/pytest" scripts/
+```
+
+**Windows** (PowerShell):
+
+```powershell
+& "$PWD\.venv\Scripts\pytest.exe" scripts\
 ```
 
 ## Project layout
 
-- `scripts/generate_data.py` -- generates the raw CSVs (with some
-  intentional data-quality issues)
+- `scripts/generate_data.py` -- downloads a sample of the real Olist
+  dataset from Kaggle (no account/API key needed) and writes it out as the
+  raw CSVs, with some intentional data-quality issues layered on top
 - `dbt/seeds/` -- raw CSVs loaded as dbt seeds
 - `dbt/models/staging/` -- cleaned, typed staging models
 - `dbt/models/marts/` -- customer and order fact/dim models

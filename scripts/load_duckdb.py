@@ -1,7 +1,7 @@
 """Load and inspect the DuckDB warehouse built by dbt.
 
 Usage (from the project root, /Users/gzenkner/projects/de_assessment):
-    python scripts/load_duckdb.py
+    "$(pwd)/.venv/bin/python" scripts/load_duckdb.py
 """
 
 import duckdb
