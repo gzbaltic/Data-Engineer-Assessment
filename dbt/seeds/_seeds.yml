@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: raw_customers
+    description: Raw customer export. Contains duplicate rows and a few blank emails, as it would from a real upstream system.
+  - name: raw_products
+    description: Raw product catalog. Contains one negative-price data-entry error.
+  - name: raw_orders
+    description: Raw orders, 2023-01-01 through 2024-12-31.
+  - name: raw_order_items
+    description: Raw order line items. Contains a few zero/negative quantities and a few orphaned order_ids (late-arriving data).

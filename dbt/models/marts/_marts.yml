@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: One row per customer.
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_order_items
+    description: One row per valid order line item, joined to its order and product.
+    columns:
+      - name: order_item_id
+        tests:
+          - unique
+          - not_null
+
+  - name: customer_order_summary
+    description: One row per customer with order counts and lifetime value, including customers with zero orders.
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null

@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/dev.duckdb
+dbt/dev.duckdb.wal
+
+# Generated seed data (reproducible via scripts/generate_data.py)
+dbt/seeds/*.csv
+
+# macOS
+.DS_Store
+dbt/.user.yml

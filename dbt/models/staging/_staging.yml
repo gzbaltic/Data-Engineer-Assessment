@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: One row per customer, de-duplicated from the raw export and with blank emails nulled out.
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+      - name: email
+        tests:
+          - unique:
+              config:
+                where: "email is not null"
+
+  - name: stg_products
+    description: One row per product, with the known negative-price data-entry error filtered out.
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+      - name: unit_price
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+  - name: stg_orders
+    description: One row per order.
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: status
+        tests:
+          - accepted_values:
+              values: ["completed", "shipped", "cancelled", "pending"]
+
+  - name: stg_order_items
+    description: One row per order line item, with zero/negative quantities filtered out.
+    columns:
+      - name: order_item_id
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+          # NOTE: deliberately no relationships test here -- a handful of raw
+          # order_items reference an order_id that doesn't exist in stg_orders
+          # (simulating late-arriving data). Part of the assessment is noticing
+          # and handling this, e.g. via an orphan-check test or an inner join
+          # in the mart layer.
+      - name: product_id
+        tests:
+          - not_null
+          # WARN not ERROR: some order_items legitimately reference the one
+          # product that stg_products filters out for its negative price.
+          # Left visible on purpose -- deciding how to handle this is part
+          # of the assessment.
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+              config:
+                severity: warn
+      - name: quantity
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
