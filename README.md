@@ -8,16 +8,14 @@ pieces fit together.
 
 ## Setup
 
-Requires Python 3.12.6 (pinned in `.python-version`). This project uses
-[pyenv](https://github.com/pyenv/pyenv) to manage the Python version, so
-every contributor builds on the same interpreter regardless of what's on
-their system already.
-
-You don't need Python pre-installed -- these steps install it from
-scratch via [pyenv](https://github.com/pyenv/pyenv) (macOS) or
-[pyenv-win](https://github.com/pyenv-win/pyenv-win) (Windows), so every
-contributor builds on the same interpreter regardless of what's on their
-system already.
+Requires Python 3.12.6 (pinned in `.python-version`). This project
+manages the Python version with [pyenv](https://github.com/pyenv/pyenv)
+on macOS/Linux, or its Windows port
+[pyenv-win](https://github.com/pyenv-win/pyenv-win) (same CLI, no
+Homebrew/Unix shell required) on Windows -- plain `pyenv` itself does not
+run on Windows. Either way, you don't need Python pre-installed: the
+steps below install it from scratch, so every contributor builds on the
+same interpreter regardless of what's on their system already.
 
 ### 1. Install pyenv
 
@@ -43,13 +41,26 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv
 Close and reopen PowerShell so the new `PYENV`/`PATH` environment
 variables take effect, then confirm with `pyenv --version`.
 
+> **Note (Windows):** if the script above fails with "running scripts is
+> disabled on this system", PowerShell's default execution policy is
+> blocking it -- run
+> `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+> first (no admin rights needed, since it's scoped to the current user),
+> then retry.
+>
+> **Note (Windows):** every command in this README that invokes the venv
+> directly uses its `.exe` wrapper (e.g. `dbt.exe`, `pytest.exe`) under
+> `.venv\Scripts\` -- `pip` creates these automatically for every
+> console-script package it installs, so nothing extra needs installing
+> for them to exist.
+
 ### 2. Clone the repo and install Python 3.12.6
 
 **macOS**:
 
-```bash
-git clone <this repo> && cd de_assessment
+Clone the repo, then `cd` into the cloned directory before continuing.
 
+```bash
 pyenv install 3.12.6  # skip if already installed
 pyenv local 3.12.6    # reads/writes .python-version -- already pinned here
 python3 --version     # confirm: Python 3.12.6
@@ -58,8 +69,6 @@ python3 --version     # confirm: Python 3.12.6
 **Windows** (PowerShell):
 
 ```powershell
-git clone <this repo>; cd de_assessment
-
 pyenv install 3.12.6  # skip if already installed
 pyenv local 3.12.6    # reads/writes .python-version -- already pinned here
 python --version      # confirm: Python 3.12.6
