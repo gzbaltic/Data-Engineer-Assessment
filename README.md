@@ -17,7 +17,8 @@ README is in).
 3. Write the logic for [`stg_products`](dbt/models/staging/stg_products.sql):
    read from the `raw_products` seed, cast `unit_price` to a decimal, and
    filter out rows with a negative price. See
-   `dbt/models/staging/_staging.yml` for the tests it needs to pass.
+   [`dbt/models/staging/_staging.yml`](dbt/models/staging/_staging.yml) for
+   the tests it needs to pass.
 4. Run `cd dbt && dbt run --select stg_products --profiles-dir . && cd ..`,
    then query `stg_products` (see [Query the data](#query-the-data)) to
    check your work.
@@ -25,7 +26,8 @@ README is in).
    (missing the `dbt_invocation_id` column) and call it from inside
    `stg_products`'s select list.
 6. Run `cd dbt && dbt run --select stg_products --profiles-dir . && cd ..`
-   again.
+   again, then query `stg_products` (see [Query the data](#query-the-data))
+   to check your work.
 7. Run the full build: `cd dbt && dbt build --profiles-dir . && cd ..`,
    then query any of the resulting models (see
    [Query the data](#query-the-data)).
@@ -77,7 +79,7 @@ Close and reopen PowerShell, then confirm with `pyenv --version`.
 > `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 > first, then retry.
 
-### 2. Clone the repo and install Python 3.12.6
+### 2. Install Python 3.12.6
 
 **macOS**:
 
@@ -95,17 +97,36 @@ pyenv local 3.12.6
 python --version       # confirm: Python 3.12.6
 ```
 
-### 3. Create the virtualenv and install dependencies
+### 3. Create the virtualenv and install Python dependencies
 
 **macOS**:
 
 ```bash
-rm -rf .venv dbt/dev.duckdb dbt/target dbt/logs dbt/dbt_packages
+rm -rf .venv
 
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 
 .venv/bin/python scripts/generate_data.py
+```
+
+**Windows** (PowerShell):
+
+```powershell
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .venv
+
+python -m venv .venv
+.venv\Scripts\pip.exe install -r requirements.txt
+
+.venv\Scripts\python.exe scripts\generate_data.py
+```
+
+### 4. Install dbt packages
+
+**macOS**:
+
+```bash
+rm -rf dbt/dev.duckdb dbt/target dbt/logs dbt/dbt_packages
 
 cd dbt
 ../.venv/bin/dbt deps --profiles-dir .
@@ -115,12 +136,7 @@ cd ..
 **Windows** (PowerShell):
 
 ```powershell
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .venv, dbt\dev.duckdb, dbt\target, dbt\logs, dbt\dbt_packages
-
-python -m venv .venv
-.venv\Scripts\pip.exe install -r requirements.txt
-
-.venv\Scripts\python.exe scripts\generate_data.py
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dbt\dev.duckdb, dbt\target, dbt\logs, dbt\dbt_packages
 
 cd dbt
 ..\.venv\Scripts\dbt.exe deps --profiles-dir .
