@@ -1,6 +1,6 @@
 with fct_order_items as (
 
-    select order_id, customer_id, order_date, status, line_total
+    select order_id, customer_id, order_date, status, null as line_total -- TODO update this
     from {{ ref('fct_order_items') }}
 
 ),

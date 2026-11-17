@@ -6,6 +6,27 @@ orders, order items) sourced from the real
 on Kaggle. See `docs/pipeline_diagram.html` for an overview of how the
 pieces fit together.
 
+## What you'll do
+
+1. Set up the environment (see Setup below).
+   - TODO: follow the Setup steps so you have a working Python venv and
+     dbt installed.
+2. Build the `products` dbt model.
+   - TODO: fill in `dbt/models/staging/stg_products.sql` -- cast
+     `unit_price` to a decimal, and filter out rows with a negative
+     price.
+3. Run `dbt parse`, then `dbt run` and `dbt test`.
+   - TODO: from `dbt/`, run `dbt parse --profiles-dir .` to check your
+     SQL compiles, then `dbt run --profiles-dir .` and
+     `dbt test --profiles-dir .` to build and test the models.
+4. Finish the metadata macro: add the missing line inside the macro
+   itself, then call it from the fact model in `marts/`.
+   - TODO: in `dbt/macros/add_metadata_columns.sql`, add the missing
+     `dbt_invocation_id` column.
+   - TODO: this macro is already called from
+     `dbt/models/marts/fct_order_items.sql` -- just confirm it builds
+     after you finish the macro.
+
 ## Setup
 
 Requires Python 3.12.6 (pinned in `.python-version`). This project
@@ -157,6 +178,49 @@ This builds `dbt/dev.duckdb`, a self-contained DuckDB database file.
 ```powershell
 & "$PWD\.venv\Scripts\python.exe" scripts\load_duckdb.py
 ```
+
+## Query the data
+
+`dbt/dev.duckdb` is a plain DuckDB file, so you can query it directly
+without going through `load_duckdb.py`.
+
+**Using the `duckdb` Python package (already in `requirements.txt`,
+no extra install):**
+
+**macOS**:
+
+```bash
+"$(pwd)/.venv/bin/python" -c "
+import duckdb
+con = duckdb.connect('dbt/dev.duckdb', read_only=True)
+print(con.sql('select * from customer_order_summary limit 10'))
+"
+```
+
+**Windows** (PowerShell):
+
+```powershell
+& "$PWD\.venv\Scripts\python.exe" -c "
+import duckdb
+con = duckdb.connect('dbt/dev.duckdb', read_only=True)
+print(con.sql('select * from customer_order_summary limit 10'))
+"
+```
+
+**Using the standalone DuckDB CLI** (if you have it installed --
+see [duckdb.org/docs/installation](https://duckdb.org/docs/installation)):
+
+```bash
+duckdb dbt/dev.duckdb -c "select * from customer_order_summary limit 10;"
+```
+
+Open it in read-only mode (`-readonly`) if you also have `dbt` running
+against the same file, since DuckDB only allows one writer at a time.
+Tables available to query: the seeds (`customers`, `products`, `orders`,
+`order_items`), the staging views (`stg_customers`, `stg_order_items`,
+`stg_orders`, `stg_products`), and the marts
+(`dim_customers`, `fct_order_items`, `customer_order_summary`). Run
+`show tables;` inside either tool above to list them all.
 
 ## Tests
 
