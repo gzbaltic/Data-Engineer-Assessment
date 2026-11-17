@@ -3,29 +3,31 @@
 A small dbt + DuckDB project with retail data (customers, products,
 orders, order items) sourced from the real
 [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-on Kaggle. See `docs/pipeline_diagram.html` for an overview of how the
-pieces fit together.
+on Kaggle.
 
 ## What you'll do
 
-1. Set up the environment (see Setup below).
-   - TODO: follow the Setup steps so you have a working Python venv and
-     dbt installed.
-2. Build the `products` dbt model.
-   - TODO: fill in `dbt/models/staging/stg_products.sql` -- cast
-     `unit_price` to a decimal, and filter out rows with a negative
-     price.
-3. Run `dbt parse`, then `dbt run` and `dbt test`.
-   - TODO: from `dbt/`, run `dbt parse --profiles-dir .` to check your
-     SQL compiles, then `dbt run --profiles-dir .` and
-     `dbt test --profiles-dir .` to build and test the models.
-4. Finish the metadata macro: add the missing line inside the macro
-   itself, then call it from the fact model in `marts/`.
-   - TODO: in `dbt/macros/add_metadata_columns.sql`, add the missing
-     `dbt_invocation_id` column.
-   - TODO: this macro is already called from
-     `dbt/models/marts/fct_order_items.sql` -- just confirm it builds
-     after you finish the macro.
+1. **Set up the environment.** Follow [Setup](#setup) below -- install
+   Python, create the venv, install dependencies.
+2. **Run `dbt seed`** (from `dbt/`: `dbt seed --profiles-dir .`) to load
+   the raw CSVs into DuckDB.
+3. **Write the logic for [`stg_products`](dbt/models/staging/stg_products.sql).**
+   It's empty -- build it from scratch, reading from the `raw_products`
+   seed: cast `unit_price` to a decimal, and filter out rows with a
+   negative price (a known data-entry error upstream). See
+   `dbt/models/staging/_staging.yml` for the tests it needs to pass.
+4. **Run just that model**: from `dbt/`,
+   `dbt run --select stg_products --profiles-dir .`
+5. **Complete [the metadata macro](dbt/macros/add_metadata_columns.sql)**
+   -- it's missing the `dbt_invocation_id` column -- and call it from
+   inside `stg_products`'s select list.
+6. **Run `stg_products` again**: `dbt run --select stg_products --profiles-dir .`
+7. **Run the full build**: `dbt build --profiles-dir .` (runs every
+   model and test, including `stg_products`, together).
+
+If you get stuck anywhere in steps 3-6, `scripts/apply_solution.py`
+restores the finished versions of those files -- see
+[Recover a working state](#recover-a-working-state) below.
 
 ## Setup
 
@@ -124,6 +126,11 @@ python --version      # confirm: Python 3.12.6
 # what's on PATH or which shell/dir you call it from.
 VENV="$(pwd)/.venv"
 
+# Clean slate: remove any previous venv/DuckDB file/dbt artifacts so
+# this always runs the same way, regardless of what a prior attempt
+# left behind.
+rm -rf "$VENV" dbt/dev.duckdb dbt/target dbt/logs dbt/dbt_packages
+
 python3 -m venv "$VENV"
 "$VENV/bin/pip" install -r requirements.txt
 
@@ -132,10 +139,13 @@ python3 -m venv "$VENV"
 cd dbt
 "$VENV/bin/dbt" deps --profiles-dir .
 "$VENV/bin/dbt" seed --profiles-dir .
-"$VENV/bin/dbt" run --profiles-dir .
-"$VENV/bin/dbt" test --profiles-dir .
 cd ..
 ```
+
+Stop there -- don't run `dbt run`/`dbt test` yet. `stg_products` is
+intentionally empty and the metadata macro intentionally incomplete, so
+a full `dbt run` will fail until you've done the work in
+[What you'll do](#what-youll-do) below.
 
 **Windows** (PowerShell):
 
@@ -145,6 +155,11 @@ cd ..
 # regardless of what's on PATH or which shell/dir you call it from.
 $Venv = "$PWD\.venv"
 
+# Clean slate: remove any previous venv/DuckDB file/dbt artifacts so
+# this always runs the same way, regardless of what a prior attempt
+# left behind.
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $Venv, dbt\dev.duckdb, dbt\target, dbt\logs, dbt\dbt_packages
+
 python -m venv $Venv
 & "$Venv\Scripts\pip.exe" install -r requirements.txt
 
@@ -153,17 +168,23 @@ python -m venv $Venv
 cd dbt
 & "$Venv\Scripts\dbt.exe" deps --profiles-dir .
 & "$Venv\Scripts\dbt.exe" seed --profiles-dir .
-& "$Venv\Scripts\dbt.exe" run --profiles-dir .
-& "$Venv\Scripts\dbt.exe" test --profiles-dir .
 cd ..
 ```
+
+Stop there -- don't run `dbt run`/`dbt test` yet. `stg_products` is
+intentionally empty and the metadata macro intentionally incomplete, so
+a full `dbt run` will fail until you've done the work in
+[What you'll do](#what-youll-do) below.
 
 Using the venv's own absolute binary path (rather than relying on an
 activated shell's `python`/`dbt` resolved from `PATH`) avoids picking up
 a different Python install (e.g. a system Python, or another pyenv
 version) by accident.
 
-This builds `dbt/dev.duckdb`, a self-contained DuckDB database file.
+`dbt seed` builds `dbt/dev.duckdb`, a self-contained DuckDB database
+file, and loads the raw seed tables into it. `dbt run`/`dbt build` (once
+you're ready for them) add the staging and mart models to the same
+file.
 
 ## Explore the data
 
@@ -221,6 +242,26 @@ Tables available to query: the seeds (`customers`, `products`, `orders`,
 `stg_orders`, `stg_products`), and the marts
 (`dim_customers`, `fct_order_items`, `customer_order_summary`). Run
 `show tables;` inside either tool above to list them all.
+
+## Recover a working state
+
+If you get stuck completing [`stg_products.sql`](dbt/models/staging/stg_products.sql)
+or [`add_metadata_columns.sql`](dbt/macros/add_metadata_columns.sql),
+[`scripts/apply_solution.py`](scripts/apply_solution.py) overwrites both
+with their finished solution so you can get back to a working state and
+keep going.
+
+**macOS**:
+
+```bash
+"$(pwd)/.venv/bin/python" scripts/apply_solution.py
+```
+
+**Windows** (PowerShell):
+
+```powershell
+& "$PWD\.venv\Scripts\python.exe" scripts\apply_solution.py
+```
 
 ## Tests
 

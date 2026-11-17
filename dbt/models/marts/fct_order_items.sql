@@ -19,6 +19,6 @@ select
     orders.order_date,
     orders.status,
     order_items.product_id,
-    order_items.quantity,
+    order_items.quantity
 from order_items
 inner join orders on order_items.order_id = orders.order_id

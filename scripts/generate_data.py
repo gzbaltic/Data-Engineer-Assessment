@@ -10,7 +10,7 @@ dbt models built on it) stay unchanged. The usual data-quality issues
 zero/negative quantities, a few orphaned order_items) are still injected
 on top, same as before.
 
-Usage (from the project root, /Users/gzenkner/projects/de_assessment):
+Usage (from the project root, /Users/gzenkner/projects/Data-Engineer-Assessment):
     "$(pwd)/.venv/bin/python" scripts/generate_data.py
 """
 
