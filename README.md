@@ -22,10 +22,9 @@ README is in), unless a `cd` tells you otherwise.
 4. Complete [the metadata macro](dbt/macros/add_metadata_columns.sql)
    (missing the `dbt_invocation_id` column) and call it from inside
    `stg_products`'s select list.
-5. Run `cd dbt && dbt run --select stg_products --profiles-dir . && cd ..`
-   again, then query `stg_products` (see [Query the data](#query-the-data))
+5. Run dbt run again, then query `stg_products` (see [Query the data](#query-the-data))
    to check your work.
-6. Run the full build: `cd dbt && dbt build --profiles-dir . && cd ..`,
+6. Run the full build in dbt, including tests,
    then query any of the resulting models (see
    [Query the data](#query-the-data)).
 
