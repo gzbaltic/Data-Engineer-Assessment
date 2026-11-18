@@ -6,33 +6,30 @@ orders, order items) sourced from the real
 on Kaggle.
 
 **Run every command below from the project root** (the directory this
-README is in).
+README is in), unless a `cd` tells you otherwise.
 
 ## What you'll do
 
-1. Follow [Setup](#setup) below.
-2. Run `cd dbt && dbt seed --profiles-dir . && cd ..`. See
-   [Query the data](#query-the-data) below to check what landed in
+1. Follow [Setup](#setup) below -- this also seeds the raw data into
    `dbt/dev.duckdb`.
-3. Write the logic for [`stg_products`](dbt/models/staging/stg_products.sql):
+2. Write the logic for [`stg_products`](dbt/models/staging/stg_products.sql):
    read from the `raw_products` seed, cast `unit_price` to a decimal, and
    filter out rows with a negative price. See
    [`dbt/models/staging/_staging.yml`](dbt/models/staging/_staging.yml) for
    the tests it needs to pass.
-4. Run `cd dbt && dbt run --select stg_products --profiles-dir . && cd ..`,
-   then query `stg_products` (see [Query the data](#query-the-data)) to
+3. Run the model(s) then query `stg_products` (see [Query the data](#query-the-data)) to
    check your work.
-5. Complete [the metadata macro](dbt/macros/add_metadata_columns.sql)
+4. Complete [the metadata macro](dbt/macros/add_metadata_columns.sql)
    (missing the `dbt_invocation_id` column) and call it from inside
    `stg_products`'s select list.
-6. Run `cd dbt && dbt run --select stg_products --profiles-dir . && cd ..`
+5. Run `cd dbt && dbt run --select stg_products --profiles-dir . && cd ..`
    again, then query `stg_products` (see [Query the data](#query-the-data))
    to check your work.
-7. Run the full build: `cd dbt && dbt build --profiles-dir . && cd ..`,
+6. Run the full build: `cd dbt && dbt build --profiles-dir . && cd ..`,
    then query any of the resulting models (see
    [Query the data](#query-the-data)).
 
-If you get stuck in steps 3-6, `scripts/apply_solution.py` restores the
+If you get stuck in steps 2-5, `scripts/apply_solution.py` restores the
 finished versions of those files -- see
 [Recover a working state](#recover-a-working-state).
 
@@ -99,9 +96,13 @@ python --version       # confirm: Python 3.12.6
 
 ### 3. Create the virtualenv and install Python dependencies
 
+Run from the project root (the directory this README is in):
+
 **macOS**:
 
 ```bash
+cd Data-Engineer-Assessment
+
 rm -rf .venv
 
 python3 -m venv .venv
@@ -113,6 +114,8 @@ python3 -m venv .venv
 **Windows** (PowerShell):
 
 ```powershell
+cd Data-Engineer-Assessment
+
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .venv
 
 python -m venv .venv
@@ -123,9 +126,14 @@ python -m venv .venv
 
 ### 4. Install dbt packages
 
+Run from the project root; these commands `cd` into `dbt/` and back out
+on their own:
+
 **macOS**:
 
 ```bash
+cd Data-Engineer-Assessment
+
 rm -rf dbt/dev.duckdb dbt/target dbt/logs dbt/dbt_packages
 
 cd dbt
@@ -136,6 +144,8 @@ cd ..
 **Windows** (PowerShell):
 
 ```powershell
+cd Data-Engineer-Assessment
+
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dbt\dev.duckdb, dbt\target, dbt\logs, dbt\dbt_packages
 
 cd dbt
@@ -143,30 +153,39 @@ cd dbt
 cd ..
 ```
 
+Now seed the raw seed files -- this builds `dbt/dev.duckdb`, a
+self-contained DuckDB database file.
+
+Check it loaded by listing the tables: `.venv/bin/python
+scripts/load_duckdb.py` (macOS) or `.venv\Scripts\python.exe
+scripts\load_duckdb.py` (Windows). See [Query the
+data](#query-the-data) below for more.
+
 Don't run `dbt run`/`dbt test` yet -- `stg_products` is intentionally
 empty and the metadata macro intentionally incomplete until you've done
-the work in [What you'll do](#what-youll-do).
-
-`dbt seed` builds `dbt/dev.duckdb`, a self-contained DuckDB database
-file. `dbt run`/`dbt build` add the staging and mart models to the same
-file.
+the work in [What you'll do](#what-youll-do). `dbt run`/`dbt build` add
+the staging and mart models to the same `dbt/dev.duckdb` file.
 
 ## Query the data
 
 [`scripts/load_duckdb.py`](scripts/load_duckdb.py) connects to
-`dbt/dev.duckdb` and prints its tables. Pass a table name to also print
-its first 10 rows.
+`dbt/dev.duckdb` and prints its tables. Pass one or more table names to
+also print the first 10 rows of each.
+
+Run from the project root:
 
 **macOS**:
 
 ```bash
-.venv/bin/python scripts/load_duckdb.py stg_products
+cd Data-Engineer-Assessment
+.venv/bin/python scripts/load_duckdb.py stg_products dim_customers
 ```
 
 **Windows** (PowerShell):
 
 ```powershell
-.venv\Scripts\python.exe scripts\load_duckdb.py stg_products
+cd Data-Engineer-Assessment
+.venv\Scripts\python.exe scripts\load_duckdb.py stg_products dim_customers
 ```
 
 Tables available grow as you progress: seeds first (`raw_customers`,
@@ -183,15 +202,18 @@ list what's there.
 [`add_metadata_columns.sql`](dbt/macros/add_metadata_columns.sql) with
 their finished solution.
 
+Run from the project root:
+
 **macOS**:
 
 ```bash
+cd Data-Engineer-Assessment
 .venv/bin/python scripts/apply_solution.py
 ```
 
 **Windows** (PowerShell):
 
 ```powershell
+cd Data-Engineer-Assessment
 .venv\Scripts\python.exe scripts\apply_solution.py
 ```
-
