@@ -62,8 +62,11 @@ also deletes the Python versions installed inside it.
 
 Do not prefix these commands with `sudo` -- `.zshrc` is a file in your own
 home directory, so it never needs elevated permissions. If you get
-`permission denied` writing to `~/.zshrc`, it means the file's ownership
-got changed (often by a past accidental `sudo` write); fix that first:
+`permission denied` writing to `~/.zshrc`, someone (often a past
+accidental `sudo` command) made another user own that file instead of
+you. The line below hands ownership back to yourself -- it'll ask for
+your password since that takes admin rights -- and does nothing if you
+already own the file:
 
 ```bash
 [ -O ~/.zshrc ] || sudo chown "$(whoami)":staff ~/.zshrc
