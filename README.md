@@ -52,6 +52,15 @@ also deletes the Python versions installed inside it.
 
 **macOS/Linux (Bash or Zsh)**:
 
+Do not prefix these commands with `sudo` -- `.zshrc` is a file in your own
+home directory, so it never needs elevated permissions. If you get
+`permission denied` writing to `~/.zshrc`, it means the file's ownership
+got changed (often by a past accidental `sudo` write); fix that first:
+
+```bash
+[ -O ~/.zshrc ] || sudo chown "$(whoami)":staff ~/.zshrc
+```
+
 ```bash
 rm -rf "$HOME/.pyenv"
 ```
