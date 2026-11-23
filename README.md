@@ -32,9 +32,17 @@ to check your work.
 6. Run the full build in dbt, including tests,
 then query any of the resulting models (see
 [Query the data](#query-the-data)).
+7. Complete [`get_tests_by_model`](scripts/parse_manifest.py) in
+`scripts/parse_manifest.py`: given the dbt manifest produced by step 6,
+return a mapping of model name to the names of tests that run against
+it. Run it with
+`.venv/bin/python scripts/parse_manifest.py` (macOS) or
+`.\.venv\Scripts\python.exe .\scripts\parse_manifest.py` (Windows) and
+check the output against `dbt/models/staging/_staging.yml` and
+`dbt/models/marts/_marts.yml`.
 
-If you get stuck in steps 2-5, `scripts/apply_solution.py` restores the
-finished versions of those files -- see
+If you get stuck in steps 2-5 or 7, `scripts/apply_solution.py` restores
+the finished versions of those files -- see
 [Recover a working state](#recover-a-working-state).
 
 ## Setup
@@ -196,7 +204,6 @@ rm -rf dbt/dev.duckdb dbt/dev.duckdb.wal dbt/target dbt/logs dbt/dbt_packages
 
 cd dbt
 ../.venv/bin/dbt deps --profiles-dir .
-../.venv/bin/dbt seed --profiles-dir .
 cd ..
 ```
 
@@ -208,7 +215,6 @@ Remove-Item -Recurse -Force -ErrorAction Stop
 
 cd dbt
 ..\.venv\Scripts\dbt.exe deps --profiles-dir .
-..\.venv\Scripts\dbt.exe seed --profiles-dir .
 cd ..
 ```
 
@@ -236,9 +242,7 @@ Run from the project root:
 
 ```bash
 cd dbt
-../.venv/bin/dbt run --profiles-dir .
-../.venv/bin/dbt test --profiles-dir .
-../.venv/bin/dbt build --profiles-dir .
+../.venv/bin/dbt <cmd> --profiles-dir .
 cd ..
 ```
 
@@ -246,9 +250,7 @@ cd ..
 
 ```powershell
 cd dbt
-..\.venv\Scripts\dbt.exe run --profiles-dir .
-..\.venv\Scripts\dbt.exe test --profiles-dir .
-..\.venv\Scripts\dbt.exe build --profiles-dir .
+..\.venv\Scripts\dbt.exe <cmd> --profiles-dir .
 cd ..
 ```
 
@@ -285,9 +287,10 @@ list what's there.
 ## Recover a working state
 
 [`scripts/apply_solution.py`](scripts/apply_solution.py) overwrites
-[`stg_products.sql`](dbt/models/staging/stg_products.sql) and
-[`add_metadata_columns.sql`](dbt/macros/add_metadata_columns.sql) with
-their finished solution.
+[`stg_products.sql`](dbt/models/staging/stg_products.sql),
+[`add_metadata_columns.sql`](dbt/macros/add_metadata_columns.sql), and
+[`parse_manifest.py`](scripts/parse_manifest.py) with their finished
+solution.
 
 Run from the project root:
 
@@ -356,3 +359,21 @@ Close Python, dbt, and any database viewers that use this project, and
 make sure your terminal is outside the directory being removed. If
 you activated `.venv`, run `deactivate` first. Retry the cleanup;
 do not continue if it failed to remove the old environment or database.
+
+### Using Bash instead of Zsh
+
+Step 1's pyenv setup is written for Zsh and wires `pyenv` into
+`~/.zshrc`. On Bash, append the same three lines to `~/.bashrc` instead,
+and change `init - zsh` to `init - bash`:
+
+```bash
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$("$PYENV_ROOT/bin/pyenv" init - bash)"' >> ~/.bashrc
+source ~/.bashrc
+"$HOME/.pyenv/bin/pyenv" --version
+```
+
+Every other command in this README calls `.venv`/`dbt` binaries
+directly rather than activating the environment, so nothing else
+differs between Bash and Zsh.
